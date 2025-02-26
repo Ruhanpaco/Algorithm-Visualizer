@@ -222,7 +222,9 @@ export default function Home() {
                       ? 'bg-blue-500' 
                       : foundIndex === idx 
                         ? 'bg-green-500'
-                        : 'bg-white'}
+                        : completedIndices.includes(idx) && options.highlightSorted
+                          ? 'bg-purple-500'
+                          : 'bg-white'}
                     rounded-[1px] md:rounded-sm
                   `}
                 />

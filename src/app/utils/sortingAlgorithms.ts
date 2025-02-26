@@ -12,10 +12,6 @@ export const stopSorting = () => {
   shouldStop = true;
 };
 
-interface AudioContextType extends AudioContext {
-  webkitAudioContext?: typeof AudioContext;
-}
-
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext;

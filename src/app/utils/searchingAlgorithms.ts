@@ -38,17 +38,13 @@ const playNote = (audioContext: AudioContext, frequency: number, options: Sortin
   oscillator.stop(audioContext.currentTime + 0.1);
 };
 
-type AnimationCallback = (indices: number[], found?: boolean) => void;
-
-interface AudioContextType extends AudioContext {
-  webkitAudioContext?: typeof AudioContext;
-}
-
 declare global {
   interface Window {
     webkitAudioContext: typeof AudioContext;
   }
 }
+
+type AnimationCallback = (indices: number[], found?: boolean) => void;
 
 // Binary Search
 export async function binarySearch(
