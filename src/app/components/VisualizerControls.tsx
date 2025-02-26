@@ -25,7 +25,7 @@ interface VisualizerControlsProps {
   isSorting: boolean;
   selectedAlgorithm: string;
   options: SortingOptions;
-  onUpdateOptions: (options: any) => void;
+  onUpdateOptions: (options: SortingOptions) => void;
   arraySize: number;
   speed: number;
   isSearching?: boolean;

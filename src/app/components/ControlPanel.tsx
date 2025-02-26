@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { SortingAlgorithm } from '../types/sorting';
 import VisualizerControls from './VisualizerControls';
 import { IoChevronUpOutline, IoChevronForwardOutline } from 'react-icons/io5';
 

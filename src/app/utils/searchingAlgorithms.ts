@@ -40,6 +40,16 @@ const playNote = (audioContext: AudioContext, frequency: number, options: Sortin
 
 type AnimationCallback = (indices: number[], found?: boolean) => void;
 
+interface AudioContextType extends AudioContext {
+  webkitAudioContext?: typeof AudioContext;
+}
+
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
 // Binary Search
 export async function binarySearch(
   array: number[],
@@ -48,7 +58,7 @@ export async function binarySearch(
   speed: number,
   options: SortingOptions
 ): Promise<number> {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
   const delay = createDelay(options);
   let left = 0;
   let right = array.length - 1;
@@ -88,7 +98,7 @@ export async function jumpSearch(
   speed: number,
   options: SortingOptions
 ): Promise<number> {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
   const delay = createDelay(options);
   
   // Sort the array first (required for jump search)

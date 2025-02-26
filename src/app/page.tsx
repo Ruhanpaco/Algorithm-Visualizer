@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AlgorithmSidebar from './components/AlgorithmSidebar';
 import VisualizerControls from './components/VisualizerControls';
 import { bubbleSort, selectionSort, binaryInsertionSort, quickSort, heapSort, mergeSort, shellSort, radixSort, stopSorting, resetSortingFlag } from './utils/sortingAlgorithms';
-import { AnimationType, SortingOptions, SortingAlgorithm } from './types/sorting';
-import ControlPanel from './components/ControlPanel';
+import { SortingOptions } from './types/sorting';
 import { binarySearch, jumpSearch, stopSearching, resetSearchFlag } from './utils/searchingAlgorithms';
 import Footer from './components/Footer';
 
@@ -30,7 +29,6 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
   const [sortingTime, setSortingTime] = useState<number | null>(null);
-  const [currentAlgorithm, setCurrentAlgorithm] = useState<SortingAlgorithm>('bubble');
 
   const generateRandomArray = useCallback((size: number = 50) => {
     const newArray = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
