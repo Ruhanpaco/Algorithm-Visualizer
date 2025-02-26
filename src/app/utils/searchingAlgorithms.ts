@@ -19,8 +19,8 @@ const createDelay = (options: SortingOptions) => (ms: number) =>
   );
 
 // Helper function for playing sound
-const playNote = (audioContext: AudioContext, frequency: number, options: SortingOptions) => {
-  if (!options.playSound) return;
+const playNote = (audioContext: AudioContext | null, frequency: number, options: SortingOptions) => {
+  if (!options.playSound || !audioContext) return;
   
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
@@ -36,6 +36,12 @@ const playNote = (audioContext: AudioContext, frequency: number, options: Sortin
   oscillator.start();
   gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
   oscillator.stop(audioContext.currentTime + 0.1);
+};
+
+// Helper function to safely create AudioContext
+const createAudioContext = () => {
+  if (typeof window === 'undefined') return null;
+  return new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
 };
 
 declare global {
@@ -54,7 +60,7 @@ export async function binarySearch(
   speed: number,
   options: SortingOptions
 ): Promise<number> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const delay = createDelay(options);
   let left = 0;
   let right = array.length - 1;
@@ -94,7 +100,7 @@ export async function jumpSearch(
   speed: number,
   options: SortingOptions
 ): Promise<number> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const delay = createDelay(options);
   
   // Sort the array first (required for jump search)

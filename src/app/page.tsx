@@ -29,6 +29,11 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
   const [sortingTime, setSortingTime] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const generateRandomArray = useCallback((size: number = 50) => {
     const newArray = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
@@ -41,8 +46,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    generateRandomArray();
-  }, [generateRandomArray]);
+    if (isClient) {
+      generateRandomArray();
+    }
+  }, [generateRandomArray, isClient]);
 
   const handleAlgorithmSelect = (name: string) => {
     setSelectedAlgorithm(name);
@@ -191,19 +198,23 @@ export default function Home() {
           <div className="w-full h-[50vh] md:h-[60vh] flex items-start justify-center gap-[1px] md:gap-1 
             bg-zinc-900/30 rounded-lg p-2 md:p-8 pb-8 md:pb-12"
           >
-            {array.map((value, idx) => (
+            {isClient && array.map((value, idx) => (
               <div
                 key={idx}
                 className="relative flex flex-col items-center"
                 style={{
                   height: '100%',
                   width: `${Math.max(
-                    window.innerWidth < 640 ? 2 : // Mobile
-                    window.innerWidth < 768 ? 3 : // Tablet
-                    800 / arraySize, // Desktop
-                    window.innerWidth < 640 ? 1 : // Mobile min
-                    window.innerWidth < 768 ? 2 : // Tablet min
-                    4 // Desktop min
+                    typeof window !== 'undefined' ? (
+                      window.innerWidth < 640 ? 2 : // Mobile
+                      window.innerWidth < 768 ? 3 : // Tablet
+                      800 / arraySize // Desktop
+                    ) : 4, // Default for SSR
+                    typeof window !== 'undefined' ? (
+                      window.innerWidth < 640 ? 1 : // Mobile min
+                      window.innerWidth < 768 ? 2 : // Tablet min
+                      4 // Desktop min
+                    ) : 4 // Default for SSR
                   )}px`
                 }}
               >
@@ -239,27 +250,29 @@ export default function Home() {
         </div>
       </main>
 
-      <VisualizerControls
-        onGenerateNewArray={generateRandomArray}
-        onUpdateSpeed={setSpeed}
-        onUpdateSize={setArraySize}
-        onSort={handleSort}
-        onSearch={handleSearch}
-        onReset={handleReset}
-        onStop={algorithmType === 'sorting' ? handleStop : stopSearching}
-        isSorting={isSorting}
-        isSearching={isSearching}
-        selectedAlgorithm={selectedAlgorithm}
-        options={options}
-        onUpdateOptions={setOptions}
-        arraySize={arraySize}
-        speed={speed}
-        searchTarget={searchTarget}
-        onUpdateSearchTarget={setSearchTarget}
-        algorithmType={algorithmType}
-        showGenerateArray={algorithmType === 'sorting' || selectedAlgorithm === 'Binary Search' || selectedAlgorithm === 'Jump Search'}
-        sortingTime={sortingTime}
-      />
+      {isClient && (
+        <VisualizerControls
+          onGenerateNewArray={generateRandomArray}
+          onUpdateSpeed={setSpeed}
+          onUpdateSize={setArraySize}
+          onSort={handleSort}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          onStop={algorithmType === 'sorting' ? handleStop : stopSearching}
+          isSorting={isSorting}
+          isSearching={isSearching}
+          selectedAlgorithm={selectedAlgorithm}
+          options={options}
+          onUpdateOptions={setOptions}
+          arraySize={arraySize}
+          speed={speed}
+          searchTarget={searchTarget}
+          onUpdateSearchTarget={setSearchTarget}
+          algorithmType={algorithmType}
+          showGenerateArray={algorithmType === 'sorting' || selectedAlgorithm === 'Binary Search' || selectedAlgorithm === 'Jump Search'}
+          sortingTime={sortingTime}
+        />
+      )}
 
       <Footer />
     </div>

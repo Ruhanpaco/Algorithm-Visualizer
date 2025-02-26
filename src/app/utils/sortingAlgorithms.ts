@@ -19,8 +19,8 @@ declare global {
 }
 
 // Helper function for playing sound
-const playNote = (audioContext: AudioContext, frequency: number, options: SortingOptions) => {
-  if (!options.playSound) return;
+const playNote = (audioContext: AudioContext | null, frequency: number, options: SortingOptions) => {
+  if (!options.playSound || !audioContext) return;
   
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
@@ -51,6 +51,12 @@ const createDelay = (options: SortingOptions) => (ms: number) =>
     )
   );
 
+// Helper function to safely create AudioContext
+const createAudioContext = () => {
+  if (typeof window === 'undefined') return null;
+  return new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+};
+
 // Bubble Sort
 export async function bubbleSort(
   array: number[],
@@ -59,7 +65,7 @@ export async function bubbleSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -94,7 +100,7 @@ export async function quickSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -154,7 +160,7 @@ export async function mergeSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -242,7 +248,7 @@ export async function heapSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -309,7 +315,7 @@ export async function selectionSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -355,7 +361,7 @@ export async function binaryInsertionSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -428,7 +434,7 @@ export async function shellSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
@@ -484,7 +490,7 @@ export async function radixSort(
   options: SortingOptions,
   setCompletedIndices: (indices: number[]) => void
 ): Promise<void> {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)() as AudioContext;
+  const audioContext = createAudioContext();
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
