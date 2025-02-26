@@ -1,101 +1,263 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import AlgorithmSidebar from './components/AlgorithmSidebar';
+import VisualizerControls from './components/VisualizerControls';
+import { bubbleSort, selectionSort, binaryInsertionSort, quickSort, heapSort, mergeSort, shellSort, radixSort, stopSorting, resetSortingFlag } from './utils/sortingAlgorithms';
+import { AnimationType, SortingOptions } from './types/sorting';
+import ControlPanel from './components/ControlPanel';
+import { binarySearch, jumpSearch, stopSearching, resetSearchFlag } from './utils/searchingAlgorithms';
+import Footer from './components/Footer';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('');
+  const [array, setArray] = useState<number[]>([]);
+  const [arraySize, setArraySize] = useState(50);
+  const [speed, setSpeed] = useState(5);
+  const [isSorting, setIsSorting] = useState(false);
+  const [originalArray, setOriginalArray] = useState<number[]>([]);
+  const [completedIndices, setCompletedIndices] = useState<number[]>([]);
+  const [options, setOptions] = useState<SortingOptions>({
+    showAnimation: true,
+    highlightSorted: true,
+    playSound: true,
+    animationType: 'basic',
+    showValues: false
+  });
+  const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
+  const [foundIndex, setFoundIndex] = useState<number | null>(null);
+  const [searchTarget, setSearchTarget] = useState<number>(50);
+  const [isSearching, setIsSearching] = useState(false);
+  const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
+  const [sortingTime, setSortingTime] = useState<number | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const generateRandomArray = () => {
+    const newArray = Array.from({ length: arraySize }, () => 
+      Math.floor(Math.random() * 80) + 10
+    );
+    setArray(newArray);
+    setOriginalArray([...newArray]);
+    setCompletedIndices([]);
+    // Reset search state
+    setHighlightedIndices([]);
+    setFoundIndex(null);
+  };
+
+  // Generate initial array
+  useEffect(() => {
+    generateRandomArray();
+  }, [arraySize]);
+
+  const handleAlgorithmSelect = (name: string) => {
+    setSelectedAlgorithm(name);
+    // Determine algorithm type
+    if (name.includes('Search')) {
+      setAlgorithmType('searching');
+    } else {
+      setAlgorithmType('sorting');
+    }
+  };
+
+  const handleSort = async () => {
+    if (isSorting) return;
+    
+    console.log('Starting sort:', selectedAlgorithm);
+    console.log('Current array:', array);
+    console.log('Array size:', arraySize);
+    console.log('Speed:', speed);
+    console.log('Options:', options);
+    
+    if (!selectedAlgorithm) {
+      console.log('No algorithm selected');
+      return;
+    }
+
+    setIsSorting(true);
+    resetSortingFlag();
+    setCompletedIndices([]);
+    setSortingTime(null);
+
+    const startTime = performance.now();
+
+    try {
+      const arrayCopy = [...array]; // Create a copy to work with
+      
+      switch (selectedAlgorithm) {
+        case 'Bubble Sort':
+          console.log('Running Bubble Sort');
+          await bubbleSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Selection Sort':
+          console.log('Running Selection Sort');
+          await selectionSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Binary Insertion Sort':
+          console.log('Running Binary Insertion Sort');
+          await binaryInsertionSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Quick Sort':
+          console.log('Running Quick Sort');
+          await quickSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Heap Sort':
+          console.log('Running Heap Sort');
+          await heapSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Merge Sort':
+          console.log('Running Merge Sort');
+          await mergeSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Shell Sort':
+          console.log('Running Shell Sort');
+          await shellSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        case 'Radix Sort':
+          console.log('Running Radix Sort');
+          await radixSort(arrayCopy, setArray, speed, options, setCompletedIndices);
+          break;
+        default:
+          console.log('Invalid algorithm selected:', selectedAlgorithm);
+          break;
+      }
+
+      const endTime = performance.now();
+      setSortingTime(endTime - startTime);
+    } catch (error) {
+      console.error('Sorting error:', error);
+    } finally {
+      setIsSorting(false);
+    }
+  };
+
+  const handleStop = () => {
+    stopSorting();
+    setIsSorting(false);
+  };
+
+  const handleReset = () => {
+    if (algorithmType === 'sorting') {
+      setArray([...originalArray]);
+      setIsSorting(false);
+      setCompletedIndices([]);
+      setSortingTime(null);
+    } else {
+      // Reset search visualization
+      setHighlightedIndices([]);
+      setFoundIndex(null);
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (isSearching) return;
+    
+    setIsSearching(true);
+    resetSearchFlag();
+    setHighlightedIndices([]);
+    setFoundIndex(null);
+
+    try {
+      switch (selectedAlgorithm) {
+        case 'Binary Search':
+          await binarySearch(array, searchTarget, setHighlightedIndices, setFoundIndex, speed, options);
+          break;
+        case 'Jump Search':
+          await jumpSearch(array, searchTarget, setHighlightedIndices, setFoundIndex, speed, options);
+          break;
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black">
+      <AlgorithmSidebar onSelectAlgorithm={handleAlgorithmSelect} />
+      
+      <main className="md:pl-64 min-h-screen flex flex-col pb-[400px] px-2 md:px-4">
+        {/* Algorithm name display */}
+        <div className="p-2 md:p-4">
+          <h1 className="text-white text-xl md:text-2xl font-bold">
+            {selectedAlgorithm || "Select an Algorithm"}
+          </h1>
+        </div>
+
+        {/* Visualization area */}
+        <div className="flex-1 flex items-center justify-center p-2 md:p-4">
+          <div className="w-full h-[50vh] md:h-[60vh] flex items-start justify-center gap-[1px] md:gap-1 
+            bg-zinc-900/30 rounded-lg p-2 md:p-8 pb-8 md:pb-12"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {array.map((value, idx) => (
+              <div
+                key={idx}
+                className="relative flex flex-col items-center"
+                style={{
+                  height: '100%',
+                  width: `${Math.max(
+                    window.innerWidth < 640 ? 2 : // Mobile
+                    window.innerWidth < 768 ? 3 : // Tablet
+                    800 / arraySize, // Desktop
+                    window.innerWidth < 640 ? 1 : // Mobile min
+                    window.innerWidth < 768 ? 2 : // Tablet min
+                    4 // Desktop min
+                  )}px`
+                }}
+              >
+                <div
+                  style={{ 
+                    height: `${value}%`,
+                    width: '100%',
+                    marginTop: 'auto',
+                    transition: options.animationType === 'smooth' 
+                      ? 'all 0.2s ease-in-out' 
+                      : 'none'
+                  }}
+                  className={`
+                    ${options.animationType === 'basic' ? 'transition-colors duration-200' : ''}
+                    ${highlightedIndices.includes(idx) 
+                      ? 'bg-blue-500' 
+                      : foundIndex === idx 
+                        ? 'bg-green-500'
+                        : 'bg-white'}
+                    rounded-[1px] md:rounded-sm
+                  `}
+                />
+                {options.showValues && (
+                  <div className="absolute -bottom-6 md:-bottom-8 text-white text-[10px] md:text-xs">
+                    {value}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <VisualizerControls
+        onGenerateNewArray={generateRandomArray}
+        onUpdateSpeed={setSpeed}
+        onUpdateSize={setArraySize}
+        onSort={handleSort}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        onStop={algorithmType === 'sorting' ? handleStop : stopSearching}
+        isSorting={isSorting}
+        isSearching={isSearching}
+        selectedAlgorithm={selectedAlgorithm}
+        options={options}
+        onUpdateOptions={setOptions}
+        arraySize={arraySize}
+        speed={speed}
+        searchTarget={searchTarget}
+        onUpdateSearchTarget={setSearchTarget}
+        algorithmType={algorithmType}
+        showGenerateArray={algorithmType === 'sorting' || selectedAlgorithm === 'Binary Search' || selectedAlgorithm === 'Jump Search'}
+        sortingTime={sortingTime}
+      />
+
+      <Footer />
     </div>
   );
 }
