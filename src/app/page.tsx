@@ -14,7 +14,6 @@ export default function Home() {
   const [arraySize, setArraySize] = useState(50);
   const [speed, setSpeed] = useState(5);
   const [isSorting, setIsSorting] = useState(false);
-  const [originalArray, setOriginalArray] = useState<number[]>([]);
   const [completedIndices, setCompletedIndices] = useState<number[]>([]);
   const [options, setOptions] = useState<SortingOptions>({
     showAnimation: true,
@@ -30,12 +29,10 @@ export default function Home() {
   const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
   const [sortingTime, setSortingTime] = useState<number | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   const generateRandomArray = useCallback((size: number = 50) => {
     const newArray = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
     setArray(newArray);
-    setOriginalArray([...newArray]);
     setCompletedIndices([]);
     setHighlightedIndices([]);
     setFoundIndex(null);
@@ -46,7 +43,6 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       setIsClient(true);
       generateRandomArray(arraySize);
-      setIsLoading(false);
     }
   }, [generateRandomArray, arraySize]);
 
@@ -66,7 +62,6 @@ export default function Home() {
     setArraySize(newSize);
     const newArray = Array.from({ length: newSize }, () => Math.floor(Math.random() * 100) + 1);
     setArray(newArray);
-    setOriginalArray([...newArray]);
     setCompletedIndices([]);
     setHighlightedIndices([]);
     setFoundIndex(null);
