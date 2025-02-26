@@ -51,8 +51,6 @@ const createDelay = (options: SortingOptions) => (ms: number) =>
     )
   );
 
-type AnimationCallback = (indices: number[], swapped?: boolean) => void;
-
 // Bubble Sort
 export async function bubbleSort(
   array: number[],
