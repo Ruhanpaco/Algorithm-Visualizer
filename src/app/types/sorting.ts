@@ -7,4 +7,14 @@ export interface SortingOptions {
   playSound: boolean;
   animationType: AnimationType;
   showValues: boolean;
-} 
+}
+
+export type SortingAlgorithm = 
+  | 'bubble' 
+  | 'quick' 
+  | 'merge' 
+  | 'heap' 
+  | 'selection' 
+  | 'insertion' 
+  | 'shell' 
+  | 'radix'; 

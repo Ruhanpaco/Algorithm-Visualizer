@@ -38,12 +38,13 @@ const playNote = (audioContext: AudioContext, frequency: number, options: Sortin
   oscillator.stop(audioContext.currentTime + 0.1);
 };
 
+type AnimationCallback = (indices: number[], found?: boolean) => void;
+
 // Binary Search
 export async function binarySearch(
   array: number[],
   target: number,
-  setHighlightedIndices: (indices: number[]) => void,
-  setFoundIndex: (index: number | null) => void,
+  animationCallback: AnimationCallback,
   speed: number,
   options: SortingOptions
 ): Promise<number> {
@@ -59,12 +60,12 @@ export async function binarySearch(
     const mid = Math.floor((left + right) / 2);
     
     // Highlight current search range
-    setHighlightedIndices([left, mid, right]);
+    animationCallback([left, mid, right]);
     playNote(audioContext, 200 + sortedArray[mid] * 5, options);
     await delay(500 / speed);
 
     if (sortedArray[mid] === target) {
-      setFoundIndex(mid);
+      animationCallback([mid], true);
       return mid;
     }
 
@@ -75,7 +76,7 @@ export async function binarySearch(
     }
   }
 
-  setFoundIndex(null);
+  animationCallback([], false);
   return -1;
 }
 
@@ -83,8 +84,7 @@ export async function binarySearch(
 export async function jumpSearch(
   array: number[],
   target: number,
-  setHighlightedIndices: (indices: number[]) => void,
-  setFoundIndex: (index: number | null) => void,
+  animationCallback: AnimationCallback,
   speed: number,
   options: SortingOptions
 ): Promise<number> {
@@ -100,7 +100,7 @@ export async function jumpSearch(
   
   // Finding the block where element is present (if it is present)
   while (!shouldStop && sortedArray[Math.min(step, n) - 1] < target) {
-    setHighlightedIndices([prev, Math.min(step, n) - 1]);
+    animationCallback([prev, Math.min(step, n) - 1]);
     playNote(audioContext, 200 + sortedArray[prev] * 5, options);
     await delay(500 / speed);
 
@@ -108,30 +108,30 @@ export async function jumpSearch(
     step += Math.floor(Math.sqrt(n));
     
     if (prev >= n) {
-      setFoundIndex(null);
+      animationCallback([], false);
       return -1;
     }
   }
 
   // Doing a linear search for target in block beginning with prev
   while (!shouldStop && sortedArray[prev] < target) {
-    setHighlightedIndices([prev]);
+    animationCallback([prev]);
     playNote(audioContext, 200 + sortedArray[prev] * 5, options);
     await delay(500 / speed);
 
     prev++;
     
     if (prev === Math.min(step, n)) {
-      setFoundIndex(null);
+      animationCallback([], false);
       return -1;
     }
   }
 
   if (sortedArray[prev] === target) {
-    setFoundIndex(prev);
+    animationCallback([prev], true);
     return prev;
   }
 
-  setFoundIndex(null);
+  animationCallback([], false);
   return -1;
 } 

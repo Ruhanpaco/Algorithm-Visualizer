@@ -3,7 +3,7 @@
 import { BiRefresh } from 'react-icons/bi';
 import { BsSpeedometer } from 'react-icons/bs';
 import { HiOutlineViewList } from 'react-icons/hi';
-import { FaPlay, FaPause, FaStop, FaSearch } from 'react-icons/fa';
+import { FaPlay, FaRedo } from 'react-icons/fa';
 import { IoSettings } from 'react-icons/io5';
 import { useState } from 'react';
 
@@ -243,7 +243,7 @@ export default function VisualizerControls({
                 >
                   {isSorting ? (
                     <>
-                      <FaStop className="w-4 h-4" />
+                      <FaRedo className="w-4 h-4" />
                       Stop
                     </>
                   ) : (
@@ -310,12 +310,12 @@ export default function VisualizerControls({
                 >
                   {isSearching ? (
                     <>
-                      <FaStop className="w-4 h-4" />
+                      <FaRedo className="w-4 h-4" />
                       Stop
                     </>
                   ) : (
                     <>
-                      <FaSearch className="w-4 h-4" />
+                      <FaPlay className="w-4 h-4" />
                       Start Search
                     </>
                   )}

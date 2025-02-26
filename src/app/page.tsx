@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AlgorithmSidebar from './components/AlgorithmSidebar';
 import VisualizerControls from './components/VisualizerControls';
 import { bubbleSort, selectionSort, binaryInsertionSort, quickSort, heapSort, mergeSort, shellSort, radixSort, stopSorting, resetSortingFlag } from './utils/sortingAlgorithms';
-import { AnimationType, SortingOptions } from './types/sorting';
+import { AnimationType, SortingOptions, SortingAlgorithm } from './types/sorting';
 import ControlPanel from './components/ControlPanel';
 import { binarySearch, jumpSearch, stopSearching, resetSearchFlag } from './utils/searchingAlgorithms';
 import Footer from './components/Footer';
@@ -30,23 +30,21 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
   const [sortingTime, setSortingTime] = useState<number | null>(null);
+  const [currentAlgorithm, setCurrentAlgorithm] = useState<SortingAlgorithm>('bubble');
 
-  const generateRandomArray = () => {
-    const newArray = Array.from({ length: arraySize }, () => 
-      Math.floor(Math.random() * 80) + 10
-    );
+  const generateRandomArray = useCallback((size: number = 50) => {
+    const newArray = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
     setArray(newArray);
     setOriginalArray([...newArray]);
     setCompletedIndices([]);
     // Reset search state
     setHighlightedIndices([]);
     setFoundIndex(null);
-  };
+  }, []);
 
-  // Generate initial array
   useEffect(() => {
     generateRandomArray();
-  }, [arraySize]);
+  }, [generateRandomArray]);
 
   const handleAlgorithmSelect = (name: string) => {
     setSelectedAlgorithm(name);
@@ -159,10 +157,16 @@ export default function Home() {
     try {
       switch (selectedAlgorithm) {
         case 'Binary Search':
-          await binarySearch(array, searchTarget, setHighlightedIndices, setFoundIndex, speed, options);
+          await binarySearch(array, searchTarget, (indices, found) => {
+            setHighlightedIndices(indices);
+            if (found !== undefined) setFoundIndex(found ? indices[0] : null);
+          }, speed, options);
           break;
         case 'Jump Search':
-          await jumpSearch(array, searchTarget, setHighlightedIndices, setFoundIndex, speed, options);
+          await jumpSearch(array, searchTarget, (indices, found) => {
+            setHighlightedIndices(indices);
+            if (found !== undefined) setFoundIndex(found ? indices[0] : null);
+          }, speed, options);
           break;
       }
     } catch (error) {
