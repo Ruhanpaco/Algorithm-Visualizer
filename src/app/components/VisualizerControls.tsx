@@ -16,7 +16,6 @@ interface SortingOptions {
 }
 
 interface VisualizerControlsProps {
-  onGenerateNewArray: () => void;
   onUpdateSpeed: (speed: number) => void;
   onUpdateSize: (size: number) => void;
   onSort: () => void;
@@ -33,12 +32,10 @@ interface VisualizerControlsProps {
   searchTarget?: number;
   onUpdateSearchTarget?: (target: number) => void;
   algorithmType?: 'sorting' | 'searching';
-  showGenerateArray?: boolean;
   sortingTime?: number | null;
 }
 
 export default function VisualizerControls({
-  onGenerateNewArray,
   onUpdateSpeed,
   onUpdateSize,
   onSort,
@@ -55,7 +52,6 @@ export default function VisualizerControls({
   searchTarget = 50,
   onUpdateSearchTarget,
   algorithmType = 'sorting',
-  showGenerateArray = true,
   sortingTime
 }: VisualizerControlsProps) {
   const [showSettings, setShowSettings] = useState(false);
@@ -186,10 +182,9 @@ export default function VisualizerControls({
             <input 
               type="range" 
               min="5" 
-              max={window.innerWidth < 640 ? 80 : // Mobile
-                   window.innerWidth < 768 ? 120 : // Tablet
-                   385} // Desktop
-              step="5"
+              max={window.innerWidth < 640 ? 350 : // Mobile
+                   window.innerWidth < 768 ? 350 : // Tablet
+                   350} // Desktop
               value={arraySize}
               onChange={(e) => onUpdateSize(Number(e.target.value))}
               className="w-full h-2 md:h-1.5 accent-white rounded-lg appearance-none bg-white/20"
@@ -218,19 +213,6 @@ export default function VisualizerControls({
         {algorithmType === 'sorting' ? (
           // Sorting Controls
           <div className="space-y-3 pt-2">
-            {showGenerateArray && (
-              <button
-                onClick={onGenerateNewArray}
-                disabled={isSorting}
-                className="w-full bg-white text-black py-2.5 rounded-lg hover:bg-gray-200 
-                  flex items-center justify-center gap-2 font-medium disabled:opacity-50 
-                  disabled:cursor-not-allowed transition-all duration-200"
-              >
-                <BiRefresh className="w-5 h-5" />
-                Generate New Array
-              </button>
-            )}
-
             {selectedAlgorithm && (
               <div className="flex gap-2">
                 <button
@@ -271,19 +253,6 @@ export default function VisualizerControls({
         ) : (
           // Searching Controls
           <div className="space-y-3 pt-2">
-            {showGenerateArray && (
-              <button
-                onClick={onGenerateNewArray}
-                disabled={isSearching}
-                className="w-full bg-white text-black py-2.5 rounded-lg hover:bg-gray-200 
-                  flex items-center justify-center gap-2 font-medium disabled:opacity-50 
-                  disabled:cursor-not-allowed transition-all duration-200"
-              >
-                <BiRefresh className="w-5 h-5" />
-                Generate New Array
-              </button>
-            )}
-
             {/* Search Target Input */}
             <div>
               <label className="block text-sm mb-2">Search Target: {searchTarget}</label>

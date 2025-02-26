@@ -45,8 +45,8 @@ const createDelay = (options: SortingOptions) => (ms: number) =>
       resolve,
       options.showAnimation 
         ? options.animationType === 'smooth'
-          ? Math.max(ms, 50)
-          : ms 
+          ? Math.max(Math.min(ms, 500), 20) // Cap delay between 20ms and 500ms
+          : Math.max(ms, 20) // Ensure minimum 20ms delay for stability
         : 0
     )
   );
@@ -69,27 +69,51 @@ export async function bubbleSort(
   const arrayCopy = [...array];
   const delay = createDelay(options);
   const completedIndices: number[] = [];
+  const baseDelay = 200;
 
-  for (let i = 0; i < arrayCopy.length - 1; i++) {
-    for (let j = 0; j < arrayCopy.length - i - 1; j++) {
-      if (shouldStop) return;
+  try {
+    for (let i = 0; i < arrayCopy.length - 1; i++) {
+      if (shouldStop) {
+        setArray([...array]); // Reset to original array when stopped
+        setCompletedIndices([]);
+        return;
+      }
 
-      if (arrayCopy[j] > arrayCopy[j + 1]) {
-        [arrayCopy[j], arrayCopy[j + 1]] = [arrayCopy[j + 1], arrayCopy[j]];
-        playNote(audioContext, 200 + arrayCopy[j] * 5, options);
-        
-        if (options.showAnimation) {
-          setArray([...arrayCopy]);
-          await delay(100 / speed);
+      for (let j = 0; j < arrayCopy.length - i - 1; j++) {
+        if (shouldStop) {
+          setArray([...array]); // Reset to original array when stopped
+          setCompletedIndices([]);
+          return;
+        }
+
+        if (arrayCopy[j] > arrayCopy[j + 1]) {
+          [arrayCopy[j], arrayCopy[j + 1]] = [arrayCopy[j + 1], arrayCopy[j]];
+          playNote(audioContext, 200 + arrayCopy[j] * 5, options);
+          
+          if (options.showAnimation) {
+            setArray([...arrayCopy]);
+            await delay(baseDelay / speed);
+          }
         }
       }
+      
+      if (!shouldStop) {
+        completedIndices.push(arrayCopy.length - 1 - i);
+        setCompletedIndices([...completedIndices]);
+        await delay(baseDelay / speed);
+      }
     }
-    completedIndices.push(arrayCopy.length - 1 - i);
-    setCompletedIndices([...completedIndices]);
-  }
 
-  setCompletedIndices(Array.from({ length: arrayCopy.length }, (_, i) => i));
-  setArray([...arrayCopy]);
+    if (!shouldStop) {
+      completedIndices.push(0);
+      setCompletedIndices(Array.from({ length: arrayCopy.length }, (_, i) => i));
+      setArray([...arrayCopy]);
+    }
+  } catch (error) {
+    console.error('Error in bubble sort:', error);
+    setArray([...array]); // Reset to original array on error
+    setCompletedIndices([]);
+  }
 }
 
 // Quick Sort
@@ -112,6 +136,9 @@ export async function quickSort(
     for (let j = low; j < high; j++) {
       if (shouldStop) return i + 1;
 
+      setArray([...arrayCopy]);
+      await delay(50 / speed);
+
       if (arrayCopy[j] <= pivot) {
         i++;
         [arrayCopy[i], arrayCopy[j]] = [arrayCopy[j], arrayCopy[i]];
@@ -125,6 +152,7 @@ export async function quickSort(
     }
 
     [arrayCopy[i + 1], arrayCopy[high]] = [arrayCopy[high], arrayCopy[i + 1]];
+    playNote(audioContext, 200 + arrayCopy[i + 1] * 5, options);
     
     if (options.showAnimation) {
       setArray([...arrayCopy]);
@@ -140,10 +168,11 @@ export async function quickSort(
       completedIndices.push(pi);
       setCompletedIndices([...completedIndices]);
 
-      await Promise.all([
-        sort(low, pi - 1),
-        sort(pi + 1, high)
-      ]);
+      await sort(low, pi - 1);
+      await sort(pi + 1, high);
+    } else if (low === high) {
+      completedIndices.push(low);
+      setCompletedIndices([...completedIndices]);
     }
   }
 
@@ -174,6 +203,9 @@ export async function mergeSort(
 
     while (i < leftArray.length && j < rightArray.length) {
       if (shouldStop) return;
+
+      setArray([...arrayCopy]);
+      await delay(50 / speed);
 
       if (leftArray[i] <= rightArray[j]) {
         arrayCopy[k] = leftArray[i];
@@ -221,9 +253,10 @@ export async function mergeSort(
     for (let idx = left; idx <= right; idx++) {
       if (!completedIndices.includes(idx)) {
         completedIndices.push(idx);
-        setCompletedIndices([...completedIndices]);
       }
     }
+    setCompletedIndices([...completedIndices]);
+    await delay(50 / speed);
   }
 
   async function sort(left: number, right: number) {
@@ -329,6 +362,10 @@ export async function selectionSort(
     for (let j = i + 1; j < arrayCopy.length; j++) {
       if (shouldStop) return;
       
+      // Highlight current comparison
+      setArray([...arrayCopy]);
+      await delay(50 / speed);
+      
       if (arrayCopy[j] < arrayCopy[minIdx]) {
         minIdx = j;
       }
@@ -347,8 +384,11 @@ export async function selectionSort(
 
     completedIndices.push(i);
     setCompletedIndices([...completedIndices]);
+    await delay(50 / speed);
   }
 
+  // Mark final element as completed
+  completedIndices.push(arrayCopy.length - 1);
   setCompletedIndices(Array.from({ length: arrayCopy.length }, (_, i) => i));
   setArray([...arrayCopy]);
 }
@@ -377,6 +417,10 @@ export async function binaryInsertionSort(
     }
 
     const mid = Math.floor((start + end) / 2);
+
+    // Highlight binary search comparison
+    setArray([...arrayCopy]);
+    await delay(50 / speed);
 
     if (item === arr[mid]) {
       return mid + 1;
@@ -419,14 +463,15 @@ export async function binaryInsertionSort(
     }
 
     completedIndices.push(j);
-    setCompletedIndices([...completedIndices.sort((a, b) => a - b)]);
+    setCompletedIndices([...new Set(completedIndices)].sort((a, b) => a - b));
+    await delay(50 / speed);
   }
 
   setCompletedIndices(Array.from({ length: arrayCopy.length }, (_, i) => i));
   setArray([...arrayCopy]);
 }
 
-// Shell Sort - A more efficient variation of insertion sort
+// Shell Sort
 export async function shellSort(
   array: number[],
   setArray: (arr: number[]) => void,
@@ -451,6 +496,10 @@ export async function shellSort(
       const temp = arrayCopy[i];
       let j;
 
+      // Highlight current element
+      setArray([...arrayCopy]);
+      await delay(50 / speed);
+
       // Shift elements until the correct location is found
       for (j = i; j >= gap && arrayCopy[j - gap] > temp; j -= gap) {
         if (shouldStop) return;
@@ -473,8 +522,11 @@ export async function shellSort(
         await delay(100 / speed);
       }
 
-      completedIndices.push(j);
-      setCompletedIndices([...completedIndices]);
+      if (!completedIndices.includes(j)) {
+        completedIndices.push(j);
+        setCompletedIndices([...completedIndices]);
+      }
+      await delay(50 / speed);
     }
   }
 
@@ -482,7 +534,7 @@ export async function shellSort(
   setArray([...arrayCopy]);
 }
 
-// Radix Sort - Non-comparative integer sorting algorithm
+// Radix Sort
 export async function radixSort(
   array: number[],
   setArray: (arr: number[]) => void,
@@ -508,6 +560,11 @@ export async function radixSort(
     // Store count of occurrences
     for (let i = 0; i < arrayCopy.length; i++) {
       if (shouldStop) return;
+      
+      // Highlight current element
+      setArray([...arrayCopy]);
+      await delay(50 / speed);
+      
       count[Math.floor(arrayCopy[i] / exp) % 10]++;
     }
 
@@ -533,12 +590,16 @@ export async function radixSort(
       }
     }
 
-    // Copy the output array to arr[]
+    // Copy the output array to arr[] and mark as completed
     for (let i = 0; i < arrayCopy.length; i++) {
       if (shouldStop) return;
+      
       arrayCopy[i] = output[i];
-      completedIndices.push(i);
-      setCompletedIndices([...completedIndices]);
+      if (!completedIndices.includes(i)) {
+        completedIndices.push(i);
+        setCompletedIndices([...completedIndices]);
+      }
+      await delay(50 / speed);
     }
   }
 

@@ -30,35 +30,47 @@ export default function Home() {
   const [algorithmType, setAlgorithmType] = useState<'sorting' | 'searching'>('sorting');
   const [sortingTime, setSortingTime] = useState<number | null>(null);
   const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   const generateRandomArray = useCallback((size: number = 50) => {
     const newArray = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
     setArray(newArray);
     setOriginalArray([...newArray]);
     setCompletedIndices([]);
-    // Reset search state
     setHighlightedIndices([]);
     setFoundIndex(null);
+    setSortingTime(null);
   }, []);
 
   useEffect(() => {
-    if (isClient) {
-      generateRandomArray();
+    if (typeof window !== 'undefined') {
+      setIsClient(true);
+      generateRandomArray(arraySize);
+      setIsLoading(false);
     }
-  }, [generateRandomArray, isClient]);
+  }, [generateRandomArray, arraySize]);
 
   const handleAlgorithmSelect = (name: string) => {
     setSelectedAlgorithm(name);
-    // Determine algorithm type
     if (name.includes('Search')) {
       setAlgorithmType('searching');
     } else {
       setAlgorithmType('sorting');
     }
+    generateRandomArray(arraySize);
+    setCompletedIndices([]);
+    setSortingTime(null);
+  };
+
+  const handleUpdateArraySize = (newSize: number) => {
+    setArraySize(newSize);
+    const newArray = Array.from({ length: newSize }, () => Math.floor(Math.random() * 100) + 1);
+    setArray(newArray);
+    setOriginalArray([...newArray]);
+    setCompletedIndices([]);
+    setHighlightedIndices([]);
+    setFoundIndex(null);
+    setSortingTime(null);
   };
 
   const handleSort = async () => {
@@ -139,7 +151,7 @@ export default function Home() {
 
   const handleReset = () => {
     if (algorithmType === 'sorting') {
-      setArray([...originalArray]);
+      generateRandomArray(arraySize);
       setIsSorting(false);
       setCompletedIndices([]);
       setSortingTime(null);
@@ -148,6 +160,7 @@ export default function Home() {
       setHighlightedIndices([]);
       setFoundIndex(null);
       setIsSearching(false);
+      generateRandomArray(arraySize);
     }
   };
 
@@ -196,65 +209,72 @@ export default function Home() {
         {/* Visualization area */}
         <div className="flex-1 flex items-center justify-center p-2 md:p-4">
           <div className="w-full h-[50vh] md:h-[60vh] flex items-start justify-center gap-[1px] md:gap-1 
-            bg-zinc-900/30 rounded-lg p-2 md:p-8 pb-8 md:pb-12"
+            bg-zinc-900/30 rounded-lg p-2 md:p-8 pb-8 md:pb-12 relative"
           >
-            {isClient && array.map((value, idx) => (
-              <div
-                key={idx}
-                className="relative flex flex-col items-center"
-                style={{
-                  height: '100%',
-                  width: `${Math.max(
-                    typeof window !== 'undefined' ? (
-                      window.innerWidth < 640 ? 2 : // Mobile
-                      window.innerWidth < 768 ? 3 : // Tablet
-                      800 / arraySize // Desktop
-                    ) : 4, // Default for SSR
-                    typeof window !== 'undefined' ? (
-                      window.innerWidth < 640 ? 1 : // Mobile min
-                      window.innerWidth < 768 ? 2 : // Tablet min
-                      4 // Desktop min
-                    ) : 4 // Default for SSR
-                  )}px`
-                }}
-              >
+            {array && array.length > 0 ? (
+              array.map((value, idx) => (
                 <div
-                  style={{ 
-                    height: `${value}%`,
-                    width: '100%',
-                    marginTop: 'auto',
-                    transition: options.animationType === 'smooth' 
-                      ? 'all 0.2s ease-in-out' 
-                      : 'none'
+                  key={idx}
+                  className="relative flex flex-col items-center"
+                  style={{
+                    height: '100%',
+                    width: `${Math.max(
+                      typeof window !== 'undefined' ? (
+                        window.innerWidth < 640 ? 1 : // Mobile
+                        window.innerWidth < 768 ? 1.5 : // Tablet
+                        800 / arraySize // Desktop
+                      ) : 2, // Default for SSR
+                      typeof window !== 'undefined' ? (
+                        window.innerWidth < 640 ? 0.5 : // Mobile min
+                        window.innerWidth < 768 ? 1 : // Tablet min
+                        2 // Desktop min
+                      ) : 2 // Default for SSR
+                    )}px`
                   }}
-                  className={`
-                    ${options.animationType === 'basic' ? 'transition-colors duration-200' : ''}
-                    ${highlightedIndices.includes(idx) 
-                      ? 'bg-blue-500' 
-                      : foundIndex === idx 
-                        ? 'bg-green-500'
-                        : completedIndices.includes(idx) && options.highlightSorted
-                          ? 'bg-purple-500'
-                          : 'bg-white'}
-                    rounded-[1px] md:rounded-sm
-                  `}
-                />
-                {options.showValues && (
-                  <div className="absolute -bottom-6 md:-bottom-8 text-white text-[10px] md:text-xs">
-                    {value}
-                  </div>
-                )}
+                >
+                  <div
+                    style={{ 
+                      height: `${value}%`,
+                      width: '100%',
+                      marginTop: 'auto',
+                      transition: options.animationType === 'smooth' 
+                        ? 'all 0.2s ease-in-out' 
+                        : 'none'
+                    }}
+                    className={`
+                      ${options.animationType === 'basic' ? 'transition-colors duration-200' : ''}
+                      ${highlightedIndices.includes(idx) 
+                        ? 'bg-blue-500' 
+                        : foundIndex === idx 
+                          ? 'bg-green-500'
+                          : completedIndices.includes(idx) && options.highlightSorted
+                            ? 'bg-purple-500'
+                            : 'bg-white'}
+                      rounded-[1px] md:rounded-sm
+                    `}
+                  />
+                  {options.showValues && (
+                    <div className="absolute -bottom-6 md:-bottom-8 text-white text-[10px] md:text-xs">
+                      {value}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/20 border-t-white"></div>
+                </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </main>
 
       {isClient && (
         <VisualizerControls
-          onGenerateNewArray={generateRandomArray}
           onUpdateSpeed={setSpeed}
-          onUpdateSize={setArraySize}
+          onUpdateSize={handleUpdateArraySize}
           onSort={handleSort}
           onSearch={handleSearch}
           onReset={handleReset}
@@ -269,7 +289,6 @@ export default function Home() {
           searchTarget={searchTarget}
           onUpdateSearchTarget={setSearchTarget}
           algorithmType={algorithmType}
-          showGenerateArray={algorithmType === 'sorting' || selectedAlgorithm === 'Binary Search' || selectedAlgorithm === 'Jump Search'}
           sortingTime={sortingTime}
         />
       )}
